@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+    postgres:
+        image: postgres:13
+        container_name: postgres
+        environment:
+            POSTGRES_DB: agnes
+            POSTGRES_USER: agnes
+            POSTGRES_PASSWORD: Agnes@24!
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+        networks:
+            - spring-boot-network
+
+    challenge:
+        build: .
+        container_name: challenge
+        ports:
+            - "8085:8085"
+        depends_on:
+            - postgres
+        networks:
+            - spring-boot-network
+
+networks:
+    spring-boot-network:
+
+volumes:
+    postgres-data:

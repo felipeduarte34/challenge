@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/main.css">
+    <meta charset="UTF-8">
+    <title>Projects</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+<div th:replace="fragments/page-title :: page-title ('Projects Administrative Page')"></div>
+
+<br><br>
+
+<div class="container" id="main">
+
+    <form v-on:submit.prevent="postProject">
+        <div class="card mb-auto">
+            <div aria-controls="projectForm" aria-expanded="false" class="card-header" data-target="#projectForm"
+                 data-toggle="collapse" id="formHeader" style="cursor: pointer">
+                <div class="float-left">New/Edit Project</div>
+                <div class="float-right">+</div>
+            </div>
+            <div class="card card-body collapse" id="projectForm">
+                <div class="form-group row">
+                    <label for="projectName" class="col-sm-4 col-form-label">Project title</label>
+                    <input id="project_id" type="hidden" v-model="project_id">
+                    <input required id="projectName" class="form-control col-sm-8" placeholder="Project title" type="text"
+                           v-model="project_name"/>
+                </div>
+                <div class="form-group row">
+                    <label for="project_description" class="col-sm-4 col-form-label">Project description</label>
+                    <input required id="project_description" class="form-control col-sm-8" placeholder="Project description"
+                           type="text"
+                           v-model="project_description"/>
+                </div>
+                <div class="form-group row">
+                    <label for="project_members_id" class="col-sm-4 col-form-label" required>Client</label>
+                    <select required name="project_member_id" id="project_client_id" v-model="project_client_id">
+                        <option disabled value="">Please select a Client</option>
+                        <option :selected="client.clientId == project_client_id" v-bind:value="client.clientId"
+                                v-for="client in clients">{{ client.clientName }} {{ client.name
+                            }}
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group row">
+                    <label for="project_statuses_id" class="col-sm-4 col-form-label">Project Status</label>
+                    <select required name="project_status_id" id="project_statuses_id" v-model="project_status_name">
+                        <option disabled value="">Please select the Project Status</option>
+                        <option :selected="status.statusName == project_status_name" v-bind:value="status.statusName"
+                                v-for="status in statuses">{{ status.statusName }}
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group row">
+                    <label for="project_members_id" class="col-sm-4 col-form-label">Project owner</label>
+                    <select name="project_member_id" id="project_members_id" v-model="project_member_id">
+                        <option disabled value="">Please select a Owner</option>
+                        <option :selected="member.teamMemberid == project_member_id" v-bind:value="member.teamMemberid"
+                                v-for="member in members">{{ member.teamMemberLastName }} {{ member.teamMemberFirstName
+                            }}
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group row">
+                    <div class="col col-sm-4"></div>
+                    <input class="btn btn-primary col col-sm-8" type="submit" value="Save">
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <br><br>
+    <form v-on:submit.prevent="getProjects">
+        <div class="form-group row">
+            <label for="project_members_id" class="col-sm-2 col-form-label" >Search By Client</label>
+            <select name="project_member_id" id="project_search_client_id" v-model="project_search_client_id">
+                <option v-bind:value="0">All</option>
+                <option :selected="client.clientId == project_search_client_id" v-bind:value="client.clientId"
+                        v-for="client in clients">{{ client.clientName }} {{ client.name}}
+                </option>
+            </select>
+            <div class="form-group ">
+                <div class="col col-sm-6"></div>
+                <input class="btn btn-primary col col-sm-12" style="margin-left: 10px;margin-top: 5px" type="submit" value="Search">
+            </div>
+        </div>
+
+
+    </form>
+    <table class="table table-striped table-bordered">
+        <thead>
+        <tr align="center">
+            <th>ID</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Client</th>
+            <th>Project Status</th>
+            <th>Owner</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr align="center" v-for="project in projects">
+            <td>{{ project.projectId }}</td>
+            <td>{{ project.projectName }}</td>
+            <td>{{ project.description }}</td>
+            <td>{{ project.clientName }}</td>
+            <td>{{ project.statusName }}</td>
+            <td>{{ project.teamMemberOfProjectLastName }} {{ project.teamMemberOfProjectFirstName }}</td>
+            <td align="center">
+                <button class="btn btn-primary" v-on:click="editProject(project)">Edit</button>
+                <button class="btn btn-danger" v-on:click="deleteProject(project)">Delete</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="webjars/vue/vue.min.js"></script>
+<script src="webjars/axios/dist/axios.min.js"></script>
+<script>
+    let app = new Vue({
+        el: '#main',
+        data() {
+            return {
+                projects: '',
+                clients: '',
+                members: '',
+                statuses: '',
+                team_member: '',
+                project_id: '',
+                project_name: '',
+                project_description: '',
+                project_status: '',
+                project_client_id: '',
+                project_search_client_id: 0,
+                project_member_id: '',
+                project_status_name: ''
+            }
+        },
+        mounted() {
+            this.getProjects();
+        },
+        methods: {
+            getProjects: function () {
+                axios
+                    .get("/api/v1/project?project_search_client_id=" + this.project_search_client_id)
+                    .then(response => (this.projects = response.data));
+                axios
+                    .get("/api/v1/client")
+                    .then(response => (this.clients = response.data));
+                axios
+                    .get("/api/v1/member")
+                    .then(response => (this.members = response.data));
+                axios
+                    .get("/api/v1/status")
+                    .then(response => (this.statuses = response.data))
+            },
+            editProject: function (project) {
+                this.project_id = project.projectId;
+                this.project_name = project.projectName;
+                this.project_description = project.description;
+                this.project_client_id = project.clientId;
+                this.project_member_id = project.teamMemberId;
+                this.project_status_name = project.statusName;
+                document.getElementById('projectForm')
+                    .setAttribute("class", document.getElementById('projectForm')
+                        .getAttribute("class") + " show");
+            },
+            postProject: function (project) {
+                if (this.project_id == '' || this.project_id == null) {
+                    axios
+                        .post("api/v1/project", {
+                            "projectId": this.project_id,
+                            "projectName": this.project_name,
+                            "description": this.project_description,
+                            "clientId": this.project_client_id,
+                            "teamMemberId": this.project_member_id,
+                            "statusName": this.project_status_name
+                        })
+                        .then(savedProject => {
+                            this.projects.push(savedProject.data)
+                            this.project_name = '';
+                            this.project_description = '';
+                            this.project_client_id = '';
+                            this.project_member_id = '';
+                            this.project_status_name = '';
+                        })
+                    alert('New project added');
+                } else {
+                    axios
+                        .put("api/v1/project/" + this.project_id, {
+                            "projectId": this.projectId,
+                            "projectName": this.project_name,
+                            "description": this.project_description,
+                            "clientId": this.project_client_id,
+                            "teamMemberId": this.project_member_id,
+                            "statusName": this.project_status_name
+                        })
+                        .then(editedProject => {
+                            this.getProjects();
+                            this.project_id = '';
+                            this.project_name = '';
+                            this.project_description = '';
+                            this.project_client_id = '';
+                            this.project_member_id = '';
+                            this.project_status_name = '';
+                        })
+                    alert("Project updated");
+                }
+            },
+            deleteProject: async function (project) {
+                await axios
+                    .delete("/api/v1/project/" + project.projectId);
+                this.getProjects();
+                alert('Project deleted');
+            }
+        }
+    })
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+        crossorigin="anonymous"></script>
+</body>
+</html>
