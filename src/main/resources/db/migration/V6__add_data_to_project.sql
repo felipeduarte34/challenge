@@ -1,4 +1,4 @@
-INSERT INTO project VALUES (1,'Project 1','Increase productivity', 1, 1, 1);
-INSERT INTO project VALUES (2,'Project 2','Reduce project time and cost',1, 3, 2);
-INSERT INTO project VALUES (3,'Project 3','Improve communication between teams', 2, 4, 3);
-INSERT INTO project VALUES (4,'Project 4','Identify innovative solutions and approaches', 2, 3, 4);
+INSERT INTO project VALUES (99996,'Project 1','Increase productivity', 99998, 1, 99996);
+INSERT INTO project VALUES (99997,'Project 2','Reduce project time and cost',99998, 3, 99996);
+INSERT INTO project VALUES (99998,'Project 3','Improve communication between teams', 99999, 4, 99999);
+INSERT INTO project VALUES (99999,'Project 4','Identify innovative solutions and approaches', 99999, 3, 99999);
