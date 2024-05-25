@@ -8,7 +8,8 @@ import java.util.List;
 public class Type {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "type_seq")
+    @SequenceGenerator(name = "type_seq", sequenceName = "type_type_id_seq", allocationSize = 1)
     @Column(name = "type_id")
     Integer typeId;
 

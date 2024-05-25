@@ -9,7 +9,8 @@ import java.util.List;
 public class TeamMembers {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "team_members_seq")
+    @SequenceGenerator(name = "team_members_seq", sequenceName = "team_members_member_id_seq", allocationSize = 1)
     @Column(name = "member_id")
     Integer memberId;
 
